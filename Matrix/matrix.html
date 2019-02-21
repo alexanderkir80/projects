@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>MATRIX v1.0 by AlexanderKir 2019</title>
+  <style type='text/css'>
+   body {
+        background: black }
+    section {
+        background: black;
+        color: black;
+        border-radius: 1em;
+        padding: 1em;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin-right: -50%;
+        transform: translate(-50%, -50%) }
+  </style>
+  </style>
+</head>
+<body>
+<section>
+	<canvas id="matrixCanvas" width=800 height=600></canvas>
+</section>	
+</body>
+</html>
+<script>
+
+	/*
+	Задачи:
+		написть что-то похожее на падающие буквы
+	*/
+	
+	function deepCloneJSON(obj){
+		return JSON.parse(JSON.stringify(obj))
+	}
+
+	
+	class Symbol{
+		constructor(maxX,maxY,maxSpeed){
+			this.maxX 		= maxX;
+			this.maxY 		= maxY;
+			this.maxSpeed 	= maxSpeed;
+			this.character	= " ";
+			this.speed		= 1;
+			this.x			= 0;
+			this.y			= 0;
+
+			this.setRandom();
+		}
+
+		setRandom(){
+			//let possibleСharacters = "❄";
+			let possibleСharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+			
+			this.character 	= possibleСharacters.charAt(Math.floor(Math.random() * possibleСharacters.length));
+			this.speed 		= 1+Math.floor(Math.random() * this.maxSpeed);
+			this.x 			= 0+Math.floor(Math.random() * this.maxX);
+			this.y 			= 0-Math.floor(Math.random() * this.maxY);
+		}
+	}
+
+
+	class Layer{
+		constructor(color,filter,font,count,width,height,maxSpeed){
+		
+			this.canvas = document.createElement('canvas');
+			this.canvas.width = width; 
+			this.canvas.height = height;
+			this.ctx = this.canvas.getContext("2d");
+			this.ctx.font = font ; //size
+			this.color = color;
+			this.font = font;
+			this.filter = filter;
+			this.symbols = [];
+			for (let i = 0; i< count; ++i){
+				this.symbols.push(new Symbol(width,height,maxSpeed));
+			}
+		}
+
+	}
+
+	class MatrixByAlxKir2019ver01{
+
+		constructor(canvasId) {
+		
+			this.speed = 1000/24;
+			//this.speed = 1000;
+			
+			//будем использовать несколько canvas, иначе this.ctx.filter не справиться с большим количестовом объектов
+			this.canvasOut = document.getElementById(canvasId);
+			this.ctxOut = this.canvasOut.getContext("2d");
+		
+			//нужно определить несколько слоев
+			//каждый слой должен содержать массив сомволов
+			//для каждого символа должны быть определены
+			//	- координаты
+			//	- скорость
+			
+			// console.log(this.canvas.width);
+			
+			this.layers = [];
+			/*
+			//this.layers.push(new Layer("Green","blur(4px)", "15px Arial",100 ,this.canvasOut.width,this.canvasOut.height,5));
+			//this.layers.push(new Layer("Green","blur(3px)", "20px Arial",100 ,this.canvasOut.width,this.canvasOut.height,6));
+			this.layers.push(new Layer("Green","blur(4px)", "15px Arial",1000 ,this.canvasOut.width,this.canvasOut.height,5));
+			this.layers.push(new Layer("Blue","blur(3px)", "20px Arial",500 ,this.canvasOut.width,this.canvasOut.height,6));
+			this.layers.push(new Layer("Orange","blur(2px)", "25px Arial",300 ,this.canvasOut.width,this.canvasOut.height,7));
+			this.layers.push(new Layer("Pink","blur(1px)",	"30px Arial",50 ,this.canvasOut.width,this.canvasOut.height,8));
+			this.layers.push(new Layer("White","none",		"45px Arial",30 ,this.canvasOut.width,this.canvasOut.height,20));
+			*/
+			this.layers.push(new Layer("White","blur(4px)", "15px Arial",2000 ,this.canvasOut.width,this.canvasOut.height,5));
+			this.layers.push(new Layer("White","blur(3px)", "20px Arial",1000 ,this.canvasOut.width,this.canvasOut.height,6));
+			this.layers.push(new Layer("White","blur(2px)", "25px Arial",600 ,this.canvasOut.width,this.canvasOut.height,7));
+			this.layers.push(new Layer("White","blur(1px)",	"30px Arial",100 ,this.canvasOut.width,this.canvasOut.height,8));
+			this.layers.push(new Layer("White","none",		"45px Arial",60 ,this.canvasOut.width,this.canvasOut.height,20));
+			
+		}
+				
+		update() {
+			
+			//изменение масштаба this.canvasOut
+			if (this.canvasOut.width != window.innerWidth*0.9) this.canvasOut.width = window.innerWidth*0.9;
+			if (this.canvasOut.height != window.innerHeight*0.9) this.canvasOut.height = window.innerHeight*0.9;
+			
+			//очистить 
+			this.ctxOut.fillStyle = "black";
+			this.ctxOut.fillRect(0, 0, this.canvasOut.width, this.canvasOut.height);
+
+			//нарисовать буковки
+			for (let l = 0; l < this.layers.length; ++l) {
+				
+				let layer = this.layers[l]; 
+				
+				//рисуем по слоям
+				layer.ctx.fillStyle = "black";
+				layer.ctx.fillRect(0, 0, layer.canvas.width, layer.canvas.height);
+				
+				layer.ctx.fillStyle = layer.color;
+				
+				for (let s = 0; s < layer.symbols.length; ++s){
+					let symbol = layer.symbols[s];
+					
+					if (symbol.y > 0){ 
+						layer.ctx.fillText(symbol.character, symbol.x, symbol.y);
+					}
+					
+					symbol.y += symbol.speed;
+					
+					if (symbol.y > layer.canvas.height) {
+						symbol.setRandom();
+					} 
+				}
+				
+				//this.ctx.filter = "none";
+
+				//отрисуем canvas > canvasOut с масштабированием
+				let saveCompositeOperation = this.ctxOut.globalCompositeOperation;
+				this.ctxOut.globalCompositeOperation = "lighten";
+				this.ctxOut.filter = layer.filter;
+				this.ctxOut.drawImage(layer.canvas, 0, 0, layer.canvas.width, layer.canvas.height, 0, 0, this.canvasOut.width, this.canvasOut.height);
+				this.ctxOut.globalCompositeOperation = saveCompositeOperation;
+				
+			}
+			
+			
+		}			
+
+	}
+	
+	
+	let matrix = new MatrixByAlxKir2019ver01("matrixCanvas");
+	
+	// запустим основной цикл
+	let t = 0;
+	function loop(){
+		
+		matrix.update();
+		
+		//соберем синхронизатор по времени
+		let now 	= new Date();
+		let tNow 	= now.getTime();
+		let tD 		=  (tNow - t);
+		let D		= 0;
+
+		if (tD > 2*matrix.speed) { 
+			D = 0; 
+		} else if (tD > matrix.speed){
+			D = matrix.speed-(tD-matrix.speed);
+		} else { 
+			D = matrix.speed;
+		}
+		
+		t = tNow;
+		
+		//console.log(tNow,t,tD,D,matrix.speed);//иногда бывает полезно посмотреть что со временем...
+		
+		setTimeout(loop, D);
+	}
+	loop();
+	
+	/*
+	//не понравилось:
+	function loop(){
+		matrix.update();
+		requestAnimationFrame(loop)
+	}
+	loop();
+	*/
+	
+</script>
