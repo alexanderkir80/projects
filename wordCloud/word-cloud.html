@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>WORDS CLOUD v1.0 by AlexanderKir 2020</title>
+  <style type='text/css'>
+   body {
+        background: white }
+    section {
+        background: white;
+        color: white;
+        border-radius: 1em;
+        padding: 1em;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin-right: -50%;
+        transform: translate(-50%, -50%) }
+  </style>
+  </style>
+</head>
+<body>
+<section>
+	<canvas id="cloudCanvas" width=537 height=860></canvas>
+</section>	
+</body>
+</html>
+<script>
+
+	/*
+	Задачи:
+	1. написать облако слов
+	*/
+
+	
+	//deepCloneJSON(obj) - функция используется для копирования многомерных массивов
+	function deepCloneJSON(obj){
+		return JSON.parse(JSON.stringify(obj))
+	}
+	
+	class wordsCloudByAlxKir2020ver01{
+
+		//wordsCloudByAlxKir2020ver01(canvasId)
+		//вызывается с парметром, указывающим на canvas на котором будет выполнена отрисовка
+		constructor(canvasId) {
+			
+			//canvas на котором будет рисовать:
+			this.canvas = document.getElementById(canvasId);
+			this.canvas.width = 300; 
+			this.canvas.height = 300;
+			this.ctx = this.canvas.getContext("2d");
+			
+			//БАЗОВЫЕ КОНСТАНТЫ:
+			this.speed = 1000; //скорость перерисовки.
+
+			this.currentMeaning = 1;
+			
+			this.words = [
+				{
+					meaning: ["word", "слово"],
+					position: { x: 50, y: 50},
+					decoration: {color : "red"}
+				},
+				{
+					meaning: ["any", "любое"],
+					position: { x:20, y: 25},					
+					decoration: {color : "blue"}
+				},
+				{
+					meaning: ["yes", "да"],
+					position: { x: 40, y: 20},					
+					decoration: {color : "black"}
+				}
+			];
+		
+			this.updateCloud();
+			
+		}
+
+				
+		//updateCloud() - обновление 
+		updateCloud(){
+			
+			//РИСОВАНИЕ:
+			
+			//очистим canvas
+			this.ctx.fillStyle = "White";
+			this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+			
+			//выведем слова
+			for (let i = 0; i < this.words.length; i++) {
+				let word = this.words[i];
+				this.ctx.font = "30px Arial";
+				this.ctx.fillStyle = word.decoration.color;
+				this.ctx.fillText(""+word.meaning[this.currentMeaning], word.position.x, word.position.y);
+			};
+		
+		}
+		
+	}
+	
+	
+	let cloud = new wordsCloudByAlxKir2020ver01("cloudCanvas");
+	
+	/*
+	//подключаем обработчик мыши
+	onmousedown = function(e){
+	}
+	*/
+	
+	//запустим основной цикл
+	//cloud.loop();
+	
+	function loop(){
+		cloud.updateCloud();
+		setTimeout(loop, cloud.speed);
+	}
+
+	loop();
+	
+</script>
